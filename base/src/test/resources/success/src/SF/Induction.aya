@@ -1,0 +1,126 @@
+open import SF::Basics
+open import Paths
+
+-- # Wow, overlap!
+--
+-- Due to we had defined `+` by _overlap pattern matching_,
+-- `n + 0` is now **definitional equal** to `n`
+
+def add_0_r (n : Nat) : n + 0 = n => idp
+
+-- Proof by Induction
+
+def nat_ind
+  (P : Nat -> Type)
+  (H0 : P O)
+  (HS : Pi (n : Nat) (P n) -> P (S n))
+  (n : Nat) : P n
+  | P, H0, HS, O => H0
+  | P, H0, HS, S n => HS n (nat_ind P H0 HS n)
+
+-- Proof by nat_ind
+def minus_n_n (n : Nat) : minus n n = 0 =>
+  nat_ind (\ n => minus n n = 0)
+    -- Goal : minus 0 0 = 0
+    idp
+    -- n : Nat
+    -- H : minus n n = 0
+    -- Goal : minus (S n) (S n) = 0
+    (\ n H => H)
+    n
+
+-- Proof by recursion
+def minus_n_n' (n : Nat) : minus n n = 0
+  | O => idp
+  | S n => minus_n_n' n
+
+-- Exercise: 2 stars, especially useful (basic_induction)
+
+def mul_0_r (n : Nat) : n * 0 = 0 => idp
+
+-- This lemma is useless in aya, but useful in other proof assistant (like Coq)
+def plus_n_Sm (n m : Nat) : S (n + m) = n + (S m)
+  -- Goal : S (0 + m) = 0 + (S m)
+  -- Simplified : S m = S m
+  | O, m => idp
+  -- Goal : S ((S n) + m) = (S n) + (S m)
+  -- Simplified : S (S (n + m)) = S (S (n + m))
+  | S n, m => idp
+
+def +-comm (n m : Nat) : n + m = m + n
+  -- Goal : 0 + m = m + 0
+  | O, m => idp
+  -- Goal : (S n) + m = m + (S n)
+  -- Simplified : S (n + m) = S (m + n)
+  -- pmap S (+-comm n m)
+  | S n, m => transport (\ x => S (n + m) = S x) (+-comm n m) idp
+
+def +-assoc (n m p : Nat) : (n + m) + p = n + (m + p)
+  -- Goal : (0 + m) + p = 0 + (m + p)
+  -- Simplified : m + p = m + p
+  | O, m, p => idp
+  -- Goal : ((S n) + m) + p = (S n) + (m + p)
+  -- Simplified : S ((n + m) + p) = S (n + (m + p))
+  | S n, m, p => pmap S (+-assoc n m p)
+
+-- Exercise: 2 stars, standard (double_plus)
+
+def double (n : Nat)
+  | O => O
+  | S n => S (S (double n))
+
+def double_plus (n : Nat) : double n = n + n
+  | O => idp
+  -- Goal : double (S n) = (S n) + (S n)
+  -- Simplified : S (S (double n)) = S (S (n + n))
+  | S n => pmap (\ x => S (S x)) (double_plus n)
+
+def eqb_refl (n : Nat) : n =? n = true
+  | O => idp
+  | S n => eqb_refl n
+
+-- Exercise: 2 stars, standard, optional (even_S)
+
+def even_S (n : Nat) : isEven (S n) = negb (isEven n)
+  | O => idp
+  | S O => idp
+  -- Goal : isEven (S (S (S n))) = negb (isEven (S (S n)))
+  --      : isEven (S n) = negb (isEven n)
+  | S (S n) => even_S n
+
+-- More Exercises
+
+-- Exercise: 3 stars, standard, especially useful (mul_comm)
+-- Lemma:
+
+def add_shuffle3 (n m p : Nat) : n + (m + p) = m + (n + p) =>
+  sym (+-assoc n m p)
+    <==> pmap (\ x => x + p) (+-comm n m)
+    <==> +-assoc m n p
+
+-- Lemma:
+def *-suc (n m : Nat) : n * (S m) = n * m + n
+  | O, m => idp
+  -- Goal : (S n) * (S m) = (S n) * m + (S n)
+  --      : (S m) + n * (S m) = (m + n * m) + (S n)
+  --      : S (m + n * (S m)) = S ((m + n * m) + n)
+  | S n, m => pmap S (
+    -- m + (n * (S m)) = (m + n * m) + n
+    -- m + (n * m + n) = (m + n * m) + n
+    ------
+    -- m + (n * S m) = m + (n * m + n)
+      -- n * S m = n * m + n
+    pmap (\ x => m + x) (*-suc n m)
+      <==> sym (+-assoc m (n * m) n)
+  )
+
+-- Our goal:
+def mul_comm (m n : Nat) : m * n = n * m
+  | O, n => idp
+  -- Goal : (S m) * n = n * (S m)
+  --      : n + m * n = n * (S m)
+  | S m, n => pmap (n +) (mul_comm m n)
+    -- Goal : n + n * m = n * (S m)
+    <==> +-comm n (n * m)
+    -- Goal : n * m + n = n * (S m)
+    <==> sym (*-suc n m)
