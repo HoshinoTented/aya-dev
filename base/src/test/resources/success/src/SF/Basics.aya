@@ -3,22 +3,22 @@ open import Paths
 -- Testing purpose migration
 
 open data Day : Type
-  | monday
-  | tuesday
-  | wednesday
-  | thursday
-  | friday
-  | saturday
-  | sunday
+| monday
+| tuesday
+| wednesday
+| thursday
+| friday
+| saturday
+| sunday
 
 def nextWeekday (d : Day) : Day
-  | monday => tuesday
-  | tuesday => wednesday
-  | wednesday => thursday
-  | thursday => friday
-  | friday => monday
-  | saturday => monday
-  | sunday => monday
+| monday => tuesday
+| tuesday => wednesday
+| wednesday => thursday
+| thursday => friday
+| friday => monday
+| saturday => monday
+| sunday => monday
 
 def i_dont_like_monday : nextWeekday monday = tuesday => idp
 def do_you_like_satureday : nextWeekday (nextWeekday saturday) = tuesday => idp
@@ -26,24 +26,24 @@ def do_you_like_satureday : nextWeekday (nextWeekday saturday) = tuesday => idp
 -- Booleans
 
 public open data Bool
-  | true
-  | false
+| true
+| false
 
 def negb (b : Bool) : Bool
-  | true => false
-  | false => true
+| true => false
+| false => true
 
 def overlap andb (a b : Bool) : Bool
-  | true , true  => true
-  | true , false => false
-  | false, true  => false
-  | false, false => false
+| true , true  => true
+| true , false => false
+| false, true  => false
+| false, false => false
 
 def overlap orb (a b : Bool) : Bool
-  | true , true  => true
-  | true , false => true
-  | false, true  => true
-  | false, false => false
+| true , true  => true
+| true , false => true
+| false, true  => true
+| false, false => false
 
 def test_orb0 : orb true  true  = true => idp
 def test_orb1 : orb true  false = true => idp
@@ -60,10 +60,10 @@ def test_orb3 : orb false false = false => idp
 --  f | f | t
 
 def overlap nand (a b : Bool) : Bool
-  | true , true  => false
-  | true , false => true
-  | false, true  => true
-  | false, false => true
+| true , true  => false
+| true , false => true
+| false, true  => true
+| false, false => true
 
 def test_nand0 : nand true  true  = false => idp
 def test_nand1 : nand true  false = true  => idp
@@ -73,17 +73,17 @@ def test_nand3 : nand false false = true  => idp
 -- # Tuples
 
 open data Bit
-  | bit0
-  | bit1
+| bit0
+| bit1
 
 open data nybble
-  | bits Bit Bit Bit Bit
+| bits Bit Bit Bit Bit
 
 def test_nybble : nybble => bits bit1 bit0 bit1 bit0
 
 def isAllZero nybble : Bool
-  | bits bit0 bit0 bit0 bit0 => true
-  | _ => false
+| bits bit0 bit0 bit0 bit0 => true
+| _ => false
 
 def test_isAllZero0 : isAllZero (bits bit1 bit0 bit1 bit0) = false => idp
 def test_isAllZero1 : isAllZero (bits bit0 bit0 bit0 bit0) = true  => idp
@@ -92,12 +92,12 @@ def test_isAllZero1 : isAllZero (bits bit0 bit0 bit0 bit0) = true  => idp
 -- Aya standard library has defined a similar Nat in `Arith::Nat`
 
 public open data Nat
-  | O
-  | S Nat
+| O
+| S Nat
 
 def pred Nat : Nat
-  | O   => O
-  | S n => n
+| O   => O
+| S n => n
 
 -- Aya is able to find the data definition which looks like a Nat,
 -- and desugar a literal number to constructor sequence.
@@ -107,9 +107,9 @@ def test_pred1   : pred 1   = 0   => idp
 def test_pred114 : pred 114 = 113 => idp
 
 def isEven Nat : Bool
-  | O       => true
-  | S O     => false
-  | S (S n) => isEven n
+| O       => true
+| S O     => false
+| S (S n) => isEven n
 
 def isOdd (n : Nat) : Bool => negb (isEven n)
 
@@ -117,36 +117,36 @@ def test_odd0 : isOdd 1 = true => idp
 def test_odd1 : isOdd 4 = false => idp
 
 def overlap infixl + (n m : Nat) : Nat
-  | O, m => m
-  | n, O => n
-  | S n, m => S (n + m)
-  | n, S m => S (n + m)
+| O, m => m
+| n, O => n
+| S n, m => S (n + m)
+| n, S m => S (n + m)
 tighter =
 
 def test_plus : 2 + 3 = 5 => idp
 
 def overlap infixl * (n m : Nat) : Nat
-  | O, m => O
-  | n, O => O
-  | S n, m => m + (n * m)
+| O, m => O
+| n, O => O
+| S n, m => m + (n * m)
 tighter +
 
 def test_mult0 : 0 * 114 = 0 => idp
 def test_mult1 : 3 * 3 = 9 => idp
 
 def minus (n m : Nat) : Nat
-  | O, m => O
-  | n, O => n
-  | S n, S m => minus n m
+| O, m => O
+| n, O => n
+| S n, S m => minus n m
 
 def test_minus0 : minus 5 0 = 5 => idp
 def test_minus1 : minus 0 5 = 0 => idp
 def test_minus2 : minus 514 114 = 400 => idp
 
 def exp (n m : Nat) : Nat
-  | O, m => O
-  | n, O => 1
-  | n, S m => n * (exp n m)
+| O, m => O
+| n, O => 1
+| n, S m => n * (exp n m)
 
 def test_exp0 : exp 5 0 = 1 => idp
 def test_exp1 : exp 0 5 = 0 => idp
@@ -159,25 +159,25 @@ def test_exp2 : exp 3 3 = 27 => idp
 -- def factorial (n : Nat) : Nat => {??}
 
 def factorial (n : Nat) : Nat
-  | O => 1
-  | S n' => n * (factorial n')
+| O => 1
+| S n' => n * (factorial n')
 
 def test_factorial0 : factorial 0 = 1 => idp
 def test_factorial1 : factorial 3 = 6 => idp
 def test_factorial2 : factorial 4 = 24 => idp
 
 def infixl =? (n m : Nat) : Bool
-  | O, O => true
-  | S _, O => false
-  | O, S _ => false
-  | S n, S m => n =? m
+| O, O => true
+| S _, O => false
+| O, S _ => false
+| S n, S m => n =? m
 tighter =
 
 def leb (n m : Nat) : Bool
-  | O, O => true
-  | S _, O => false
-  | O, S _ => true
-  | S n, S m => leb n m
+| O, O => true
+| S _, O => false
+| O, S _ => true
+| S n, S m => leb n m
 
 def test_eqb0 : 0 =? 0 = true => idp
 def test_eqb1 : 114 =? 114 = true => idp
@@ -193,10 +193,10 @@ def test_leb3 : leb 5 5 = true  => idp
 -- def ltb (n m : Nat) : Bool => {??}
 
 def ltb (n m : Nat) : Bool
-  | O, O => false
-  | S _, O => false
-  | O, S _ => true
-  | S n, S m => ltb n m
+| O, O => false
+| S _, O => false
+| O, S _ => true
+| S n, S m => ltb n m
 
 def test_ltb0 : ltb 0 0 = false => idp
 def test_ltb1 : ltb 0 5 = true  => idp
@@ -310,18 +310,18 @@ def mult_n_1 :
 -- TODO: Match expression
 
 def plus_1_neq_0 (n : Nat) : (n + 1) =? 0 = false
-  | O => idp
-  | S n => idp
+| O => idp
+| S n => idp
 
 def negb_involutive (b : Bool) : negb (negb b) = b
-  | true  => idp
-  | false => idp
+| true  => idp
+| false => idp
 
 def andb_comm (a b : Bool) : andb a b = andb b a
-  | true, true => idp
-  | true, false => idp
-  | false, true => idp
-  | false, false => idp
+| true, true => idp
+| true, false => idp
+| false, true => idp
+| false, false => idp
 
 -- Exercise: 2 stars, standard (andb_elim2)
 
@@ -330,15 +330,15 @@ def andb_comm (a b : Bool) : andb a b = andb b a
 -- > Note that contradiction implies anything, so don't be confused when you get `true = false`
 
 def andb_elim2 (b c : Bool) (H : andb b c = true) : c = true
-  | true, true, _ => idp
-  | true, false, H => H
-  | false, true, _ => idp
-  | false, false, H => H
+| true, true, _ => idp
+| true, false, H => H
+| false, true, _ => idp
+| false, false, H => H
 
 def andb_elim1 (b c : Bool) (H : andb b c = true) : b = true
-  | true, _, _ => idp
-  | false, true, H => H
-  | false, false, H => H
+| true, _, _ => idp
+| false, true, H => H
+| false, false, H => H
 
 -- More exercises
 
@@ -353,18 +353,18 @@ def identity_fn_applied_twice (f : Bool -> Bool) (H : Pi (x : Bool) -> f x = x) 
 -- 3 stars
 
 def andb_eq_orb (b c : Bool) (H : andb b c = orb b c) : b = c
-  | true, true, _ => idp
-  | true, false, H => sym H
-  | false, true, H => H
-  | false, false, _ => idp
+| true, true, _ => idp
+| true, false, H => sym H
+| false, true, H => H
+| false, false, _ => idp
 
 
 -- 3 stars, standard (binary)
 
 open data Bin
-  | Z
-  | B0 (n : Bin)
-  | B1 (n : Bin)
+| Z
+| B0 (n : Bin)
+| B1 (n : Bin)
 
 -- little-endian bit string
 --  decimal |  binary  |  unary  | Big Endian
@@ -377,14 +377,14 @@ open data Bin
 -- impl these!
 
 def incr (m : Bin) : Bin
-  | Z => B1 Z
-  | B0 m' => B1 m'
-  | B1 m' => B0 (incr m')
+| Z => B1 Z
+| B0 m' => B1 m'
+| B1 m' => B0 (incr m')
 
 def bin_to_nat (m : Bin) : Nat
-  | Z => O
-  | B0 m' => 2 * (bin_to_nat m')
-  | B1 m' => 1 + 2 * (bin_to_nat m')
+| Z => O
+| B0 m' => 2 * (bin_to_nat m')
+| B1 m' => 1 + 2 * (bin_to_nat m')
 
 -- impl above
 
