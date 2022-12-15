@@ -1,0 +1,171 @@
+open import Paths
+open import SF::Induction
+
+// We can define Pair by
+open data NatProd
+| pair (n1 : Nat) (n2 : Nat)
+
+// or, we can use the built-in pair type which called Sigma.
+// And congratulate! We have match expression now!
+
+def natprod-to-sigma (p : NatProd) : Sig Nat ** Nat =>
+  match p {
+  | pair n1 n2 => (n1, n2)
+  }
+
+// We can use `.1` to "refer" the first element of a pair
+def sigma-to-natprod (p : Sig Nat ** Nat) : NatProd =>
+  pair p.1 p.2
+
+def fst (p : NatProd) : Nat
+| pair n1 _ => n1
+
+example def test_fst : fst (pair 1 2) = 1 => idp
+
+def snd (p : NatProd) : Nat
+| pair _ n2 => n2
+
+def swap_pair (p : NatProd) : NatProd
+| pair n1 n2 => pair n2 n1
+
+example def test_swap (p : NatProd) : snd (swap_pair p) = fst p
+// Goal :  snd (swap_pair (pair n1 n2)) = fst (pair n1 n2)
+//     <-> snd (pair n2 n1) = n1
+//     <-> n1 = n1
+| pair n1 n2 => idp
+
+// Exercise: 1 star
+def snd_fst_is_swap (p : NatProd) : pair (snd p) (fst p) = swap_pair p
+| pair _ _ => idp
+
+// ## Lists of Numbers
+
+open data NatList
+| nil
+| infixr :< (n : Nat) (l : NatList)
+
+// TODO: Literal for non-general list
+
+def repeat (n count : Nat) : NatList
+| n, O   => nil
+| n, S count => n :< repeat n count
+
+def length (xs : NatList) : Nat
+| nil => 0
+| _ :< xs => S (length xs)
+
+def infixl ++ (xs ys : NatList) : NatList
+| nil    , ys => ys
+| x :< xs, ys => x :< (xs ++ ys)
+
+def hd (default : Nat) (xs : NatList) : Nat
+| _, nil => default
+| _, x :< _ => x
+
+def tl (xs : NatList) : NatList
+| nil     => nil
+| _ :< xs => xs
+
+example def test_hd0 : hd 3 (0 :< 1 :< 2 :< nil) = 0 => idp
+example def test_hd1 : hd 3 nil = 3 => idp
+example def test_tl : tl (0 :< 1 :< 2 :< nil) = (1 :< 2 :< nil) => idp
+
+// Exercise: 2 stars
+// impl these so that they can pass tests
+
+def nonzeros (xs : NatList) : NatList
+| nil => nil
+| O :< xs => nonzeros xs
+| x :< xs => x :< nonzeros xs
+
+def oddmembers (xs : NatList) : NatList
+| nil => nil
+| x :< xs => match isOdd x {
+             | true => x :< oddmembers xs
+             | false => oddmembers xs
+             }
+
+// You may no need to use recursion to impl this function
+def count_oddmembers (xs : NatList) : Nat => length (oddmembers xs)
+
+// ^impl above
+
+def test_list => 0 :< 1 :< 0 :< 2 :< 3 :< 0 :< 0 :< nil
+example def test_nonzeros : nonzeros test_list = (1 :< 2 :< 3 :< nil) => idp
+example def test_oddmembers : oddmembers test_list = (1 :< 3 :< nil) => idp
+example def test_count_oddmembers0 : count_oddmembers (1 :< 0 :< 3 :< 1 :< 4 :< 5 :< nil) = 4 => idp
+example def test_count_oddmembers1 : count_oddmembers (0 :< 2 :< 4 :< nil) = 0 => idp
+example def test_count_oddmembers2 : count_oddmembers nil = 0 => idp
+
+// 3 stars
+
+def alternate (xs ys : NatList) : NatList
+| nil, ys => ys
+| xs, nil => xs
+| x :< xs, y :< ys => x :< y :< alternate xs ys
+
+example def test_alternate0 :
+  alternate (1 :< 2 :< 3 :< nil) (4 :< 5 :< 6 :< nil) = (1 :< 4 :< 2 :< 5 :< 3 :< 6 :< nil) =>
+  idp
+
+example def test_alternate1 :
+  alternate (1 :< nil) (4 :< 5 :< 6 :< nil) = (1 :< 4 :< 5 :< 6 :< nil) =>
+  idp
+
+example def test_alternate2 :
+  alternate (1 :< 2 :< 3 :< nil) (4 :< nil) = (1 :< 4 :< 2 :< 3 :< nil) =>
+  idp
+
+example def test_alternate3 :
+  alternate nil (20 :< 30 :< nil) = (20 :< 30 :< nil) =>
+  idp
+
+// Bag (aka multiset) via List
+
+def Bag : Type => NatList
+
+def count (n : Nat) (b : Bag) : Nat
+| n, nil => 0
+| n, x :< xs => match n =? x {
+                | true => S (count n xs)
+                | false => count n xs
+                }
+
+example def test_count0 : count 1 (1 :< 2 :< 3 :< 1 :< 4 :< 1 :< nil) = 3 => idp
+example def test_count1 : count 6 (1 :< 2 :< 3 :< 1 :< 4 :< 1 :< nil) = 0 => idp
+
+def sum : Bag -> Bag -> Bag => ++
+
+example def test_sum0 : count 1 (sum (1 :< 2 :< 3 :< nil) (1 :< 4 :< 1 :< nil)) = 3 => idp
+
+def add (v : Nat) (s : Bag) : Bag => v :< s
+
+example def test_add0 : count 1 (add 1 (1 :< 4 :< 1 :< nil)) = 3 => idp
+example def test_add1 : count 5 (add 1 (1 :< 4 :< 1 :< nil)) = 0 => idp
+
+def member (v : Nat) (s : Bag) : Bool
+| v, nil => false
+| v, x :< xs => match v =? x {
+                | true => true
+                | false => member v xs
+                }
+
+example def test_member0 : member 1 (1 :< 4 :< 1 :< nil) = true => idp
+example def test_member1 : member 2 (1 :< 4 :< 1 :< nil) = false => idp
+
+def if-else {A : Type} (b : Bool) (ifTrue : A) (ifFalse : A) : A
+| true, ifTrue, _ => ifTrue
+| false, _, ifFalse => ifFalse
+
+def remove_one (v : Nat) (s : Bag) : Bag
+| _, nil => nil
+| v, x :< xs => if-else (v =? x) xs (x :< remove_one v xs)
+
+example def test_remove_one0 :
+  count 5 (remove_one 5 (2 :< 1 :< 5 :< 4 :< 1 :< nil)) = 0 =>
+  idp
+
+example def test_remove_one1 :
+  count 5 (remove_one 5 (2 :< 1 :< 4 :< 1 :< nil)) = 0 =>
+  idp
+
