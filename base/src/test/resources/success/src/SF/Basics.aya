@@ -1,6 +1,6 @@
 open import Paths
 
--- Testing purpose migration
+// Testing purpose migration
 
 open data Day : Type
 | monday
@@ -23,7 +23,7 @@ def nextWeekday (d : Day) : Day
 def i_dont_like_monday : nextWeekday monday = tuesday => idp
 def do_you_like_satureday : nextWeekday (nextWeekday saturday) = tuesday => idp
 
--- Booleans
+// Booleans
 
 public open data Bool
 | true
@@ -50,14 +50,14 @@ def test_orb1 : orb true  false = true => idp
 def test_orb2 : orb false true  = true => idp
 def test_orb3 : orb false false = false => idp
 
--- Exercise: 1 star, standard (nandb)
--- impl a function that accepts two booleans and returns one boolean, which holds this truth table
---  a | b | result
--- :-:|:-:|:------:
---  t | t | f
---  t | f | t
---  f | t | t
---  f | f | t
+// Exercise: 1 star, standard (nandb)
+// impl a function that accepts two booleans and returns one boolean, which holds this truth table
+//  a | b | result
+// :-:|:-:|://////:
+//  t | t | f
+//  t | f | t
+//  f | t | t
+//  f | f | t
 
 def overlap nand (a b : Bool) : Bool
 | true , true  => false
@@ -70,7 +70,7 @@ def test_nand1 : nand true  false = true  => idp
 def test_nand2 : nand false true  = true  => idp
 def test_nand3 : nand false false = true  => idp
 
--- # Tuples
+// # Tuples
 
 open data Bit
 | bit0
@@ -88,8 +88,8 @@ def isAllZero nybble : Bool
 def test_isAllZero0 : isAllZero (bits bit1 bit0 bit1 bit0) = false => idp
 def test_isAllZero1 : isAllZero (bits bit0 bit0 bit0 bit0) = true  => idp
 
--- # Natural Number
--- Aya standard library has defined a similar Nat in `Arith::Nat`
+// # Natural Number
+// Aya standard library has defined a similar Nat in `Arith::Nat`
 
 public open data Nat
 | O
@@ -99,8 +99,8 @@ def pred Nat : Nat
 | O   => O
 | S n => n
 
--- Aya is able to find the data definition which looks like a Nat,
--- and desugar a literal number to constructor sequence.
+// Aya is able to find the data definition which looks like a Nat,
+// and desugar a literal number to constructor sequence.
 
 def test_pred0   : pred 0   = 0   => idp
 def test_pred1   : pred 1   = 0   => idp
@@ -152,11 +152,11 @@ def test_exp0 : exp 5 0 = 1 => idp
 def test_exp1 : exp 0 5 = 0 => idp
 def test_exp2 : exp 3 3 = 27 => idp
 
--- Exercise: 1 star, standard (factorial)
---   factorial(0) = 1
---   factorial(n) = n * factorail(n - 1) where (n > 0)
+// Exercise: 1 star, standard (factorial)
+//   factorial(0) = 1
+//   factorial(n) = n * factorail(n - 1) where (n > 0)
 
--- def factorial (n : Nat) : Nat => {??}
+// def factorial (n : Nat) : Nat => {??}
 
 def factorial (n : Nat) : Nat
 | O => 1
@@ -188,9 +188,9 @@ def test_leb1 : leb 0 5 = true  => idp
 def test_leb2 : leb 5 0 = false => idp
 def test_leb3 : leb 5 5 = true  => idp
 
--- Exercise: 1 star, standard (ltb)
+// Exercise: 1 star, standard (ltb)
 
--- def ltb (n m : Nat) : Bool => {??}
+// def ltb (n m : Nat) : Bool => {??}
 
 def ltb (n m : Nat) : Bool
 | O, O => false
@@ -203,7 +203,7 @@ def test_ltb1 : ltb 0 5 = true  => idp
 def test_ltb2 : ltb 5 0 = false => idp
 def test_ltb3 : ltb 5 5 = false => idp
 
--- # Proof by `idp`
+// # Proof by `idp`
 
 def +-0-n : Pi (n : Nat) -> O + n = n =>
   \ n => idp
@@ -214,100 +214,100 @@ def +-1-n : Pi (n : Nat) -> 1 + n = S n =>
 def *-0-n : Pi (n : Nat) -> 0 * n = 0 =>
   \ n => idp
 
--- Proof by `transport`
+// Proof by `transport`
 
 def plus_id_example : Pi (n m : Nat) (n = m) -> n + n = m + m =>
   \ n m H =>
-  -- n m : Nat
-  -- H : n = m
+  // n m : Nat
+  // H : n = m
     transport (\ x => n + n = x + x) H idp
 
--- The proof above can be described in:
--- 1. We have a hypothesis: `n = m`
--- 2. We want to prove: `n + n = m + m` (which is called **goal**)
--- 3. We want to replace the right side `m` with `n` by using the hypothesis `n = m`
--- 4. `transport` allowed us:
---    If we have a proof of `n + n = x + x` where `x` is `n`,
---    and a proof (hypothesis) of `n = m`,
---    we can prove `n + n = x + x` where x is `m`.
---    (which is exactly replacing)
---
--- It (transport) looks like we can apply a `n = m` to
--- a template `n + n = x + x` (where `x` is the template parameter);
--- If one side proved, so does another side.
+// The proof above can be described in:
+// 1. We have a hypothesis: `n = m`
+// 2. We want to prove: `n + n = m + m` (which is called **goal**)
+// 3. We want to replace the right side `m` with `n` by using the hypothesis `n = m`
+// 4. `transport` allowed us:
+//    If we have a proof of `n + n = x + x` where `x` is `n`,
+//    and a proof (hypothesis) of `n = m`,
+//    we can prove `n + n = x + x` where x is `m`.
+//    (which is exactly replacing)
+//
+// It (transport) looks like we can apply a `n = m` to
+// a template `n + n = x + x` (where `x` is the template parameter);
+// If one side proved, so does another side.
 
--- We can also replace `n` with `m`, but we need another tool:
+// We can also replace `n` with `m`, but we need another tool:
 
--- Proof by `sym`
+// Proof by `sym`
 
 def refl_sym : Pi (n m : Nat) (n = m) -> m = n =>
   \ n m H =>
-  -- n m : Nat
-  -- H : n = m
-  -- Goal : m = n
-  -- We can just exchange two side of `=` by `sym`
+  // n m : Nat
+  // H : n = m
+  // Goal : m = n
+  // We can just exchange two sides of `=` by `sym`
   sym H
 
--- Then we are able to replace `n` with `m`
+// Then we are able to replace `n` with `m`
 
 def plus_id_example' : Pi (n m : Nat) (n = m) -> n + n = m + m =>
   \ n m H =>
-  -- n m : Nat
-  -- H : n = m
-  -- Goal : n + n = m + m
-  -- We use template `x + x = m + m` (because we want to replace `n` with `m`)
+  // n m : Nat
+  // H : n = m
+  // Goal : n + n = m + m
+  // We use template `x + x = m + m` (because we want to replace `n` with `m`)
   transport (\ x => x + x = m + m)
-    (sym H)   -- use `m = n` instead of `n = m`
-    idp       -- prove `plus m m = plus m m`
+    (sym H)   // use `m = n` instead of `n = m`
+    idp       // prove `plus m m = plus m m`
 
--- Exercise: 1 star, standard (plus_id_exercise)
+// Exercise: 1 star, standard (plus_id_exercise)
 
--- def plus_id_exercise : Pi (n m o : Nat) (n = m) (m = o) -> n + m = m + o
---   => {??}
+// def plus_id_exercise : Pi (n m o : Nat) (n = m) (m = o) -> n + m = m + o
+//   => {??}
 
 def plus_id_exercise : Pi (n m o : Nat) (n = m) (m = o) -> n + m = m + o =>
   \ n m o Hnm Hmo =>
-  -- n m o : Nat
-  -- Hnm : n = m
-  -- Hmo : m = o
-  -- Goal : n + m = m + o
+  // n m o : Nat
+  // Hnm : n = m
+  // Hmo : m = o
+  // Goal : n + m = m + o
     transport (\ x => n + m = x + o) Hnm
-      -- Goal : n + m = n + o
+      // Goal : n + m = n + o
       (transport (\ x => n + m = n + x) Hmo idp)
 
 def mult_n_0_m_0 : Pi (p q : Nat) -> (p * 0) + (q * 0) = 0 =>
   \ p q =>
-    -- transport with exist proof
+    // transport with exist proof
     transport (\ x => x + (q * 0) = 0) (*-0-n p)
-      -- Goal : 0 + (q * 0) = 0
+      // Goal : 0 + (q * 0) = 0
       (transport (\ x => 0 + x = 0) (*-0-n q) idp)
 
--- Exercise: 1 star, standard (mult_n_1)
--- Suppose we have a proof of `mult_n_Sm : (n * m) + n = n * (S m)`
--- Prove this:
---
--- def mult_n_1 :
---   (Pi (n m : Nat) -> (n * m) + n = n * (S m))
---   -> Pi (p : Nat) -> p * 1 = p =>
---   \ mult_n_Sm => {??}
---
--- > We do have the proof of `mult_n_Sm`, see `Aya Standard Library`
+// Exercise: 1 star, standard (mult_n_1)
+// Suppose we have a proof of `mult_n_Sm : (n * m) + n = n * (S m)`
+// Prove this:
+//
+// def mult_n_1 :
+//   (Pi (n m : Nat) -> (n * m) + n = n * (S m))
+//   -> Pi (p : Nat) -> p * 1 = p =>
+//   \ mult_n_Sm => {??}
+//
+// > We do have the proof of `mult_n_Sm`, see `Aya Standard Library`
 
 def mult_n_1 :
   (Pi (n m : Nat) -> (n * m) + n = n * (S m))
   -> Pi (p : Nat) -> p * 1 = p =>
   \ mult_n_Sm p =>
-  -- mult_n_Sm : Pi (n m : Nat) -> (n * m) + n = n * (S m)
-  -- p : Nat
-  -- Goal : mult p 1 = p
+  // mult_n_Sm : Pi (n m : Nat) -> (n * m) + n = n * (S m)
+  // p : Nat
+  // Goal : mult p 1 = p
   transport (\ x => x = p) (mult_n_Sm p O)
-    -- Goal : (mult p O) + p = p
-    -- Goal : O + p = p            (definitional equal)
-    -- Goal : p = p                   (definitional equal)
+    // Goal : (mult p O) + p = p
+    // Goal : O + p = p            (definitional equal)
+    // Goal : p = p                   (definitional equal)
     idp
 
--- # Proof by Case Analysis
--- TODO: Match expression
+// # Proof by Case Analysis
+// TODO: Match expression
 
 def plus_1_neq_0 (n : Nat) : (n + 1) =? 0 = false
 | O => idp
@@ -323,11 +323,11 @@ def andb_comm (a b : Bool) : andb a b = andb b a
 | false, true => idp
 | false, false => idp
 
--- Exercise: 2 stars, standard (andb_elim2)
+// Exercise: 2 stars, standard (andb_elim2)
 
--- def andb_elim2 (b c : Bool) (H : andb b c = true) : c = true => {??}
---
--- > Note that contradiction implies anything, so don't be confused when you get `true = false`
+// def andb_elim2 (b c : Bool) (H : andb b c = true) : c = true => {??}
+//
+// > Note that contradiction implies anything, so don't be confused when you get `true = false`
 
 def andb_elim2 (b c : Bool) (H : andb b c = true) : c = true
 | true, true, _ => idp
@@ -340,17 +340,17 @@ def andb_elim1 (b c : Bool) (H : andb b c = true) : b = true
 | false, true, H => H
 | false, false, H => H
 
--- More exercises
+// More exercises
 
--- 1 star
+// 1 star
 
 def identity_fn_applied_twice (f : Bool -> Bool) (H : Pi (x : Bool) -> f x = x) (b : Bool) : f (f b) = b =>
--- H (f b) <==> H b
+// H (f b) <==> H b
   transport (\ x => f (f b) = x) (H b)
-    -- Goal : f (f b) = f b
+    // Goal : f (f b) = f b
     (H (f b))
 
--- 3 stars
+// 3 stars
 
 def andb_eq_orb (b c : Bool) (H : andb b c = orb b c) : b = c
 | true, true, _ => idp
@@ -359,22 +359,22 @@ def andb_eq_orb (b c : Bool) (H : andb b c = orb b c) : b = c
 | false, false, _ => idp
 
 
--- 3 stars, standard (binary)
+// 3 stars, standard (binary)
 
 open data Bin
 | Z
 | B0 (n : Bin)
 | B1 (n : Bin)
 
--- little-endian bit string
---  decimal |  binary  |  unary  | Big Endian
--- :-------:|:--------:|:-------:|:----------:
---  0       | Z        | O       | 0
---  1       | B1 Z     | S O     | 1
---  2       | B0 B1 Z  | S S O   | 10
---  ...     | ...      | ...     | ...
+// little-endian bit string
+//  decimal |  binary  |  unary  | Big Endian
+// ://////-:|:////////:|://////-:|://////////:
+//  0       | Z        | O       | 0
+//  1       | B1 Z     | S O     | 1
+//  2       | B0 B1 Z  | S S O   | 10
+//  ...     | ...      | ...     | ...
 
--- impl these!
+// impl these!
 
 def incr (m : Bin) : Bin
 | Z => B1 Z
@@ -386,7 +386,7 @@ def bin_to_nat (m : Bin) : Nat
 | B0 m' => 2 * (bin_to_nat m')
 | B1 m' => 1 + 2 * (bin_to_nat m')
 
--- impl above
+// impl above
 
 def test_bin_incr0 : incr (B1 Z) = B0 (B1 Z) => idp
 def test_bin_incr1 : incr (B0 (B1 Z)) = B1 (B1 Z) => idp
@@ -396,16 +396,16 @@ def test_bin_to_nat0 : bin_to_nat (B0 (B1 Z)) = 2 => idp
 def test_bin_to_nat1 : bin_to_nat (incr (B1 Z)) = 1 + (bin_to_nat (B1 Z)) => idp
 def test_bin_to_nat2 : bin_to_nat (incr (incr (B1 Z))) = 2 + (bin_to_nat (B1 Z)) => idp
 
--- (Optional, but useful) Proof by `<==>`
--- Aya provided an operator to connect two equations, this is the transitivity of equality.
+// (Optional, but useful) Proof by `<==>`
+// Aya provided an operator to connect two equations, this is the transitivity of equality.
 
 def connect {a b c : Nat} (Hab : a = b) (Hbc : b = c) : a = c =>
   Hab <==> Hbc
 
--- Proof by `pmap`
--- Aya provided an operator to `apply` function to both side of the equation, It says:
--- * If `a = b`, for some function `f`, we have `f a = f b`
+// Proof by `pmap`
+// Aya provided an operator to `apply` function to both side of the equation, It says:
+// * If `a = b`, for some function `f`, we have `f a = f b`
 
 def add_n_comm (n m p : Nat) (+-comm : Pi (a b : Nat) -> a + b = b + a) : n + (m + p) = n + (p + m) =>
-  -- `(\ x => n + x)` can be replaced with `(n +)`
+  // `(\ x => n + x)` can be replaced with `(n +)`
   pmap (\x => n + x) (+-comm m p)
