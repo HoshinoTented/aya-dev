@@ -169,3 +169,45 @@ example def test_remove_one1 :
   count 5 (remove_one 5 (2 :< 1 :< 4 :< 1 :< nil)) = 0 =>
   idp
 
+def remove_all (v : Nat) (s : Bag) : Bag
+| _, nil => nil
+| v, x :< xs => if-else (v =? x) (remove_all v xs) (x :< remove_one v xs)
+
+example def test_remove_all0 :
+  count 5 (remove_all 5 (2 :< 1 :< 5 :< 4 :< 1 :< nil)) = 0 =>
+    idp
+
+example def test_removeall1
+  count 1 (remove_all 1 (1 :< 1 :< 1 :< nil)) = 0 =>
+    idp
+
+def add_inc_count (s : Bag) (v : Nat) : S (length s) = length (add v s)
+| nil,     v => idp
+| x :< xs, v => idp
+
+def rev (xs : NatList) : NatList
+| nil => nil
+| x :< xs => rev xs ++ (x :< nil)
+
+example def test_rev : rev (1 :< 2 :< 3 :< nil) = (3 :< 2 :< 1 :< nil) = idp
+
+
+def rev_length (xs : NatList) : length (rev xs) = length xs
+// Goal : length (rev nil) = length nil
+//     <-> 0 = 0
+| nil => idp
+// Goal : length (rev (x :< xs)) = length (x :< xs)
+//     <-> length (rev xs ++ (x :< nil)) = S (length xs)
+| x :< xs => {??}
+
+def cons-++-assoc (x : Nat) (xs ys : NatList) : (x :< xs) ++ ys = x :< (xs ++ ys)
+| x, nil, ys => idp
+| x, y :< xs, ys => idp
+
+def ++-length (xs ys : NatList) : length (xs ++ ys) = length xs + length ys
+// Goal : length (nil ++ ys) = length nil + length ys
+//    <-> length ys = 0 + length ys
+| nil, ys => idp
+// Goal : length ((x :< xs) ++ ys) = length (x :< xs) + length ys
+//    <-> length
+| x :< xs, ys => {??}

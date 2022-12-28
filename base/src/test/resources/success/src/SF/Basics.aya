@@ -2,7 +2,7 @@ open import Paths
 
 // Testing purpose migration
 
-open data Day : Type
+private open data Day : Type
 | monday
 | tuesday
 | wednesday
@@ -25,7 +25,7 @@ def do_you_like_satureday : nextWeekday (nextWeekday saturday) = tuesday => idp
 
 // Booleans
 
-public open data Bool
+open data Bool
 | true
 | false
 
@@ -72,11 +72,11 @@ def test_nand3 : nand false false = true  => idp
 
 // # Tuples
 
-open data Bit
+private open data Bit
 | bit0
 | bit1
 
-open data nybble
+private open data nybble
 | bits Bit Bit Bit Bit
 
 def test_nybble : nybble => bits bit1 bit0 bit1 bit0
@@ -91,7 +91,7 @@ def test_isAllZero1 : isAllZero (bits bit0 bit0 bit0 bit0) = true  => idp
 // # Natural Number
 // Aya standard library has defined a similar Nat in `Arith::Nat`
 
-public open data Nat
+open data Nat
 | O
 | S Nat
 
@@ -361,7 +361,7 @@ def andb_eq_orb (b c : Bool) (H : andb b c = orb b c) : b = c
 
 // 3 stars, standard (binary)
 
-open data Bin
+private open data Bin
 | Z
 | B0 (n : Bin)
 | B1 (n : Bin)
