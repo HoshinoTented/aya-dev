@@ -14,7 +14,7 @@ import org.aya.cli.literate.SyntaxHighlight;
 import org.aya.cli.parse.AyaParserImpl;
 import org.aya.concrete.stmt.Stmt;
 import org.aya.core.def.PrimDef.Factory;
-import org.aya.literate.HighlighterTester.ExpectedHighlightType.LitInt;
+import org.aya.literate.HighlighterTester.ExpectedType.LitInt;
 import org.aya.pretty.doc.Link;
 import org.aya.resolve.ResolveInfo;
 import org.aya.resolve.context.EmptyContext;
@@ -32,39 +32,39 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HighlighterTester {
-  record ExpectedHighlightInfo(
+  public record Expected(
     @NotNull SourcePos sourcePos,
-    @NotNull ExpectedHighlightType expected
-  ) implements Comparable<ExpectedHighlightInfo> {
-    @Override public int compareTo(@NotNull HighlighterTester.ExpectedHighlightInfo o) {
+    @NotNull HighlighterTester.ExpectedType expected
+  ) implements Comparable<Expected> {
+    @Override public int compareTo(@NotNull HighlighterTester.Expected o) {
       return sourcePos.compareTo(o.sourcePos);
     }
   }
 
-  public sealed interface ExpectedHighlightType {
+  public sealed interface ExpectedType {
     @NotNull String display();
 
     record Def(
       @Override @NotNull String display, @Nullable String name,
       @Nullable HighlightInfo.DefKind kind
-    ) implements ExpectedHighlightType {
+    ) implements ExpectedType {
     }
 
     record Ref(
       @Override @NotNull String display, @Nullable String name,
       @Nullable HighlightInfo.DefKind kind
-    ) implements ExpectedHighlightType {}
+    ) implements ExpectedType {}
 
-    record Keyword(@Override @NotNull String display) implements ExpectedHighlightType {}
+    record Keyword(@Override @NotNull String display) implements ExpectedType {}
 
-    record LitString(@NotNull String expected) implements ExpectedHighlightType {
+    record LitString(@NotNull String expected) implements ExpectedType {
       @Override
       public @NotNull String display() {
         return '\"' + expected + '\"';
       }
     }
 
-    record LitInt(int expected) implements ExpectedHighlightType {
+    record LitInt(int expected) implements ExpectedType {
       @Override
       public @NotNull String display() {
         return Integer.toString(expected);
@@ -74,16 +74,18 @@ public class HighlighterTester {
 
   public final @NotNull String sourceCode;
   public final @NotNull ImmutableSeq<HighlightInfo> actual;
-
-  // NotNull array with Nullable element
-  public final ExpectedHighlightInfo[] expected;
+  public final @NotNull ImmutableSeq<@Nullable Expected> expected;
 
   // TODO[hoshino]: Inductive Defined (allow scope)
   // (User-Defined Name, (Unique ID, Nullable Def Kind))
   public final MutableMap<String, Tuple2<Link, Option<HighlightInfo.DefKind>>> defMap = MutableMap.create();
   public final MutableMap<Link, Option<HighlightInfo.DefKind>> defSet = MutableMap.create();
 
-  public HighlighterTester(@NotNull String sourceCode, @NotNull ImmutableSeq<HighlightInfo> actual, @Nullable ExpectedHighlightInfo[] expected) {
+  public HighlighterTester(
+    @NotNull String sourceCode,
+    @NotNull ImmutableSeq<HighlightInfo> actual,
+    @NotNull ImmutableSeq<@Nullable Expected> expected
+  ) {
     this.sourceCode = sourceCode;
     this.actual = actual;
     this.expected = expected;
@@ -94,10 +96,10 @@ public class HighlighterTester {
     if (sortedActual.last() instanceof HighlightInfo.Lit(var $, var kind) && kind == HighlightInfo.LitKind.Eol)
       // Remove the last Eol
       sortedActual = sortedActual.dropLast(1);
-    runTest(sortedActual.toImmutableSeq(), Seq.of(expected));
+    runTest(sortedActual.toImmutableSeq(), expected);
   }
 
-  public void runTest(@NotNull ImmutableSeq<HighlightInfo> actuals, @NotNull Seq<ExpectedHighlightInfo> expecteds) {
+  private void runTest(@NotNull ImmutableSeq<HighlightInfo> actuals, @NotNull ImmutableSeq<@Nullable Expected> expecteds) {
     actuals.forEachWith(expecteds, (actual, expected) -> {
       if (expected == null) {
         switch (actual) {
@@ -121,21 +123,21 @@ public class HighlighterTester {
 
       switch (actual) {
         case HighlightInfo.Lit(var $, var ty)
-          when ty == HighlightInfo.LitKind.Keyword && expected.expected() instanceof ExpectedHighlightType.Keyword -> {
+          when ty == HighlightInfo.LitKind.Keyword && expected.expected() instanceof ExpectedType.Keyword -> {
         }
         case HighlightInfo.Lit(var $, var ty)
           when ty == HighlightInfo.LitKind.Int && expected.expected() instanceof LitInt -> {
         }
         case HighlightInfo.Lit(var $, var ty)
-          when ty == HighlightInfo.LitKind.String && expected.expected() instanceof ExpectedHighlightType.LitString -> {
+          when ty == HighlightInfo.LitKind.String && expected.expected() instanceof ExpectedType.LitString -> {
         }
 
         case HighlightInfo.Def def
-          when expected.expected() instanceof ExpectedHighlightType.Def expectedDef ->
+          when expected.expected() instanceof ExpectedType.Def expectedDef ->
           assertDef(sourcePos, def, expectedDef);
 
         case HighlightInfo.Ref ref
-          when expected.expected() instanceof ExpectedHighlightType.Ref expectedRef ->
+          when expected.expected() instanceof ExpectedType.Ref expectedRef ->
           assertRef(sourcePos, ref, expectedRef);
 
         case HighlightInfo.Err err -> throw new UnsupportedOperationException("TODO");   // TODO
@@ -157,7 +159,7 @@ public class HighlighterTester {
     defSet.put(def.target(), Option.ofNullable(def.kind()));
   }
 
-  public void assertDef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Def actualDef, @NotNull HighlighterTester.ExpectedHighlightType.Def expectedDef) {
+  public void assertDef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Def actualDef, @NotNull HighlighterTester.ExpectedType.Def expectedDef) {
     checkDef(sourcePos, actualDef);
 
     assertEquals(expectedDef.kind(), actualDef.kind());
@@ -182,7 +184,7 @@ public class HighlighterTester {
     assertEquals(defData.getOrNull(), ref.kind());
   }
 
-  public void assertRef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Ref actualRef, @NotNull HighlighterTester.ExpectedHighlightType.Ref expectedRef) {
+  public void assertRef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Ref actualRef, @NotNull HighlighterTester.ExpectedType.Ref expectedRef) {
     checkRef(sourcePos, actualRef);
 
     var name = expectedRef.name();
@@ -198,7 +200,7 @@ public class HighlighterTester {
     assertEquals(actualRef.kind(), expectedRef.kind());
   }
 
-  public static void highlightAndTest(@Language("Aya") @NotNull String code, @Nullable ExpectedHighlightInfo... expected) {
+  public static void highlightAndTest(@Language("Aya") @NotNull String code, @Nullable Expected... expected) {
     var sourceFile = new SourceFile("test.aya", Option.none(), code);
     var reporter = AyaThrowingReporter.INSTANCE;
 
@@ -215,7 +217,7 @@ public class HighlighterTester {
     var result = SyntaxHighlight.highlight(null, Option.some(sourceFile), stmts)
       .filterNot(it -> it instanceof HighlightInfo.Lit(var $, var kind)
         && ignored.contains(kind));
-    new HighlighterTester(code, result, expected).runTest();
+    new HighlighterTester(code, result, ImmutableSeq.from(expected)).runTest();
   }
 
   static Seq<HighlightInfo.LitKind> ignored = Seq.of(HighlightInfo.LitKind.Eol, HighlightInfo.LitKind.Whitespace);
@@ -226,48 +228,48 @@ public class HighlighterTester {
     return new SourcePos(SourceFile.NONE, start, end, 0, 0, 0, 0);
   }
 
-  public static @NotNull ExpectedHighlightInfo keyword(int begin, int end, @NotNull String display) {
-    return new ExpectedHighlightInfo(mockPos(begin, end), new ExpectedHighlightType.Keyword(display));
+  public static @NotNull HighlighterTester.Expected keyword(int begin, int end, @NotNull String display) {
+    return new Expected(mockPos(begin, end), new ExpectedType.Keyword(display));
   }
 
-  public static @NotNull ExpectedHighlightInfo def(int begin, int end, @NotNull String display, @Nullable String name, @Nullable HighlightInfo.DefKind defKind) {
-    return new ExpectedHighlightInfo(mockPos(begin, end), new ExpectedHighlightType.Def(display, name, defKind));
+  public static @NotNull HighlighterTester.Expected def(int begin, int end, @NotNull String display, @Nullable String name, @Nullable HighlightInfo.DefKind defKind) {
+    return new Expected(mockPos(begin, end), new ExpectedType.Def(display, name, defKind));
   }
 
-  public static @NotNull ExpectedHighlightInfo def(int begin, int end, @NotNull String display, @Nullable HighlightInfo.DefKind defKind) {
+  public static @NotNull HighlighterTester.Expected def(int begin, int end, @NotNull String display, @Nullable HighlightInfo.DefKind defKind) {
     return def(begin, end, display, null, defKind);
   }
 
-  public static @NotNull ExpectedHighlightInfo localDef(int begin, int end, @NotNull String display, @Nullable String name) {
+  public static @NotNull HighlighterTester.Expected localDef(int begin, int end, @NotNull String display, @Nullable String name) {
     return def(begin, end, display, name, HighlightInfo.DefKind.LocalVar);
   }
 
-  public static @NotNull ExpectedHighlightInfo localDef(int begin, int end, @NotNull String display) {
+  public static @NotNull HighlighterTester.Expected localDef(int begin, int end, @NotNull String display) {
     return localDef(begin, end, display, null);
   }
 
-  public static @NotNull ExpectedHighlightInfo ref(int begin, int end, @NotNull String display, @Nullable String name, HighlightInfo.DefKind defKind) {
-    return new ExpectedHighlightInfo(mockPos(begin, end), new ExpectedHighlightType.Ref(display, name, defKind));
+  public static @NotNull HighlighterTester.Expected ref(int begin, int end, @NotNull String display, @Nullable String name, HighlightInfo.DefKind defKind) {
+    return new Expected(mockPos(begin, end), new ExpectedType.Ref(display, name, defKind));
   }
 
-  public static @NotNull ExpectedHighlightInfo ref(int begin, int end, @NotNull String display, HighlightInfo.DefKind defKind) {
+  public static @NotNull HighlighterTester.Expected ref(int begin, int end, @NotNull String display, HighlightInfo.DefKind defKind) {
     return ref(begin, end, display, null, defKind);
   }
 
-  public static @NotNull ExpectedHighlightInfo localRef(int begin, int end, @NotNull String display, @Nullable String name) {
+  public static @NotNull HighlighterTester.Expected localRef(int begin, int end, @NotNull String display, @Nullable String name) {
     return ref(begin, end, display, name, HighlightInfo.DefKind.LocalVar);
   }
 
-  public static @NotNull ExpectedHighlightInfo localRef(int begin, int end, @NotNull String display) {
+  public static @NotNull HighlighterTester.Expected localRef(int begin, int end, @NotNull String display) {
     return localRef(begin, end, display, null);
   }
 
-  public static @NotNull ExpectedHighlightInfo litInt(int begin, int end, int display) {
-    return new ExpectedHighlightInfo(mockPos(begin, end), new LitInt(display));
+  public static @NotNull HighlighterTester.Expected litInt(int begin, int end, int display) {
+    return new Expected(mockPos(begin, end), new LitInt(display));
   }
 
   @Contract(" -> null")
-  public static @Nullable ExpectedHighlightInfo whatever() {
+  public static @Nullable HighlighterTester.Expected whatever() {
     return null;
   }
 
