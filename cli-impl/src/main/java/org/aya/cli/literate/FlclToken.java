@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public record FlclToken(
   @NotNull SourcePos range,
+  @NotNull String text,
   @NotNull Type type
 ) {
   public static final @NotNull Link EMPTY_LINK = Link.page("");
@@ -37,6 +38,6 @@ public record FlclToken(
   }
 
   private @NotNull HighlightInfo.Ref createRef(HighlightInfo.@NotNull DefKind kind) {
-    return new HighlightInfo.Ref(range, EMPTY_LINK, kind, null);
+    return new HighlightInfo.Ref(range, Link.page(text), kind, null);
   }
 }

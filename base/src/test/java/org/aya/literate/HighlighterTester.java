@@ -78,8 +78,8 @@ public class HighlighterTester {
 
   // TODO[hoshino]: Inductive Defined (allow scope)
   // (User-Defined Name, (Unique ID, Nullable Def Kind))
-  public final MutableMap<String, Tuple2<Link, Option<HighlightInfo.DefKind>>> defMap = MutableMap.create();
-  public final MutableMap<Link, Option<HighlightInfo.DefKind>> defSet = MutableMap.create();
+  public final MutableMap<String, Tuple2<Link, Option<HighlightInfo.DefKind>>> userDefMap = MutableMap.create();
+  public final MutableMap<Link, Option<HighlightInfo.DefKind>> defMap = MutableMap.create();
 
   public HighlighterTester(
     @NotNull String sourceCode,
@@ -143,7 +143,7 @@ public class HighlighterTester {
         case HighlightInfo.Err err -> throw new UnsupportedOperationException("TODO");   // TODO
 
         default ->
-          fail("expected: " + expected.getClass().getSimpleName() + ", but actual: " + actual.getClass().getSimpleName());
+          fail("expected: " + expected.expected.getClass().getSimpleName() + ", but actual: " + actual.getClass().getSimpleName());
       }
     });
     assertEquals(expecteds.size(), actuals.size(), "size mismatch");
@@ -153,10 +153,10 @@ public class HighlighterTester {
    * Check no duplicated def.
    */
   public void checkDef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Def def) {
-    var existDef = defSet.containsKey(def.target());
+    var existDef = defMap.containsKey(def.target());
     assertFalse(existDef, "Duplicated def: " + def.target() + " at " + sourcePos);
 
-    defSet.put(def.target(), Option.ofNullable(def.kind()));
+    defMap.put(def.target(), Option.ofNullable(def.kind()));
   }
 
   public void assertDef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Def actualDef, @NotNull HighlighterTester.ExpectedType.Def expectedDef) {
@@ -167,10 +167,10 @@ public class HighlighterTester {
     var name = expectedDef.name();
 
     if (name != null) {
-      var existName = defMap.getOption(name);
+      var existName = userDefMap.getOption(name);
       assertFalse(existName.isDefined(), "Duplicated name: " + expectedDef.name());
 
-      defMap.put(name, Tuple.of(actualDef.target(), Option.ofNullable(actualDef.kind())));
+      userDefMap.put(name, Tuple.of(actualDef.target(), Option.ofNullable(actualDef.kind())));
     }
   }
 
@@ -178,7 +178,7 @@ public class HighlighterTester {
    * Check the reference
    */
   public void checkRef(@NotNull SourcePos sourcePos, @NotNull HighlightInfo.Ref ref) {
-    var defData = defSet.getOrNull(ref.target());
+    var defData = defMap.getOrNull(ref.target());
 
     assertNotNull(defData, "Expected def: " + ref.target() + " at " + sourcePos);
     assertEquals(defData.getOrNull(), ref.kind());
@@ -190,7 +190,7 @@ public class HighlighterTester {
     var name = expectedRef.name();
 
     if (name != null) {
-      var existName = defMap.getOption(name);
+      var existName = userDefMap.getOption(name);
       assertTrue(existName.isDefined(), "Undefined name: " + expectedRef.name());
 
       var defData = existName.get();

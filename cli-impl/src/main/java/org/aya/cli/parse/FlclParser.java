@@ -43,7 +43,7 @@ public record FlclParser(
     var nums = body.childrenOfType(FlclPsiElementTypes.NUMBER).toImmutableSeq();
     var tokens = MutableArrayList.<FlclToken>create(ids.size() + nums.size());
     ids.mapNotNullTo(tokens, this::computeType);
-    nums.mapTo(tokens, n -> computeToken(n.range(), FlclToken.Type.Number));
+    nums.mapTo(tokens, n -> computeToken(n.range(), n.tokenText().toString(), FlclToken.Type.Number));
     int startIndex = node.child(FlclPsiElementTypes.SEPARATOR).range().getEndOffset() + 1;
     return new FlclToken.File(tokens.toImmutableSeq(), body.tokenText(), startIndex);
   }
@@ -61,14 +61,14 @@ public record FlclParser(
   private @Nullable FlclToken computeType(@NotNull MarkerNodeWrapper text) {
     for (var entry : decls.entrySet()) {
       if (entry.getValue().contains(text.tokenText().toString())) {
-        return computeToken(text.range(), entry.getKey());
+        return computeToken(text.range(), text.tokenText().toString(), entry.getKey());
       }
     }
     return null;
   }
 
-  private @NotNull FlclToken computeToken(TextRange range, FlclToken.Type key) {
-    return new FlclToken(AyaProducer.sourcePosOf(range, file, true), key);
+  private @NotNull FlclToken computeToken(TextRange range, @NotNull String text, FlclToken.Type key) {
+    return new FlclToken(AyaProducer.sourcePosOf(range, file, true), text, key);
   }
 
   private static class FlclFleetParser extends DefaultPsiParser {
