@@ -42,12 +42,8 @@ public sealed interface ModuleContext extends Context permits NoExportContext, P
   /**
    * All imported modules in this context.<br/>
    * {@code Qualified Module -> Module Export}
-   *
-   * @apiNote empty list => this module
-   * @implNote This module should be automatically imported.
    */
   @NotNull MutableMap<ModuleName.Qualified, ModuleExport> modules();
-
 
   /**
    * Things (symbol or module) that are exported by this module.

@@ -73,6 +73,10 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
     }
   }
   void remove(@NotNull SeqView<LocalVar> vars);
+
+  /**
+   * Puts FREE variables which are in {@param term} to {@param dest}
+   */
   default void forward(@NotNull LocalCtx dest, @NotNull Term term, @NotNull TyckState state) {
     new VarConsumer.Scoped() {
       @Override public void var(@NotNull AnyVar var) {
