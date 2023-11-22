@@ -72,6 +72,9 @@ public abstract sealed class MockTycker extends StatedTycker permits ConcreteAwa
     return new PiTerm(new Term.Param(new LocalVar(genName, pos), domain, explicit), codomain);
   }
 
+  /**
+   * Fill the leading implicit arguments with holes.
+   */
   protected final Result instImplicits(@NotNull Result result, @NotNull SourcePos pos) {
     var type = whnf(result.type());
     var term = result.wellTyped();

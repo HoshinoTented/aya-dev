@@ -22,10 +22,7 @@ import org.aya.ref.LocalVar;
 import org.aya.tyck.tycker.TyckState;
 import org.aya.util.error.InternalException;
 import org.aya.util.error.SourcePos;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Debug;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -35,6 +32,12 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
   @NotNull default Tuple2<MetaTerm, Term> freshHole(@NotNull Term type, @NotNull SourcePos sourcePos) {
     return freshHole(type, Constants.ANONYMOUS_PREFIX, sourcePos);
   }
+
+  /**
+   * Creating a new {@link Meta} in type {@param type} with name {@param name}
+   *
+   * @param sourcePos sourcePos of the {@link Meta}
+   */
   default @NotNull Tuple2<MetaTerm, Term>
   freshHole(@NotNull Term type, @NotNull String name, @NotNull SourcePos sourcePos) {
     var ctxTele = extract();
@@ -51,9 +54,17 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
     var hole = new MetaTerm(meta, ctxTele.map(Term.Param::toArg), view.map(UntypedParam::toArg));
     return Tuple.of(hole, LamTerm.make(view, hole));
   }
+
+  /**
+   * Perform {@param action} under this context + {@param param}
+   */
   default <T> T with(@NotNull Term.Param param, @NotNull Supplier<T> action) {
     return with(param.ref(), param.type(), action);
   }
+
+  /**
+   * Perform {@param action} under this context + {@param params}
+   */
   default <T> T with(@NotNull Seq<Term.Param> params, @NotNull Supplier<T> action) {
     if (params.isEmpty()) return action.get();
     params.forEach(x -> put(x.ref(), x.type()));
@@ -63,6 +74,7 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
       remove(params.view().map(Term.Param::ref));
     }
   }
+
   default <T> T withIntervals(@NotNull SeqView<LocalVar> params, @NotNull Supplier<T> action) {
     if (params.isEmpty()) return action.get();
     params.forEach(x -> put(x, IntervalTerm.INSTANCE));
@@ -72,6 +84,7 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
       remove(params);
     }
   }
+
   void remove(@NotNull SeqView<LocalVar> vars);
 
   /**

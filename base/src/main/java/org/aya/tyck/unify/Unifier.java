@@ -60,8 +60,10 @@ public final class Unifier extends TermComparator {
   }
 
   /**
+   * Substitute the arguments of {@param lhs} to the corresponding parameter of {@param meta}
    * @param subst is added with unique variables in the inverted spine
    * @return the list of duplicated variables if the spine is successfully inverted.
+   *         {@code null} if {@param lhs} contains non-var argument.
    */
   private @Nullable Seq<LocalVar> invertSpine(Subst subst, @NotNull MetaTerm lhs, @NotNull Meta meta) {
     var overlap = MutableArrayList.<LocalVar>create();
