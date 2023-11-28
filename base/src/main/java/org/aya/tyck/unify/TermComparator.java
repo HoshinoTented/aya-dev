@@ -116,6 +116,10 @@ public sealed abstract class TermComparator extends MockTycker permits Unifier {
     return compare(lhs, rhs, new Sub(), new Sub(), type);
   }
 
+  /**
+   * Checking whether {@param lhs} and {@param rhs} are judgemental equal,
+   * and whether they have type {@param type}
+   */
   protected final boolean compare(Term lhs, Term rhs, Sub lr, Sub rl, @Nullable Term type) {
     if (lhs == rhs) return true;
     if (compareApprox(lhs, rhs, lr, rl) != null) return true;
@@ -141,6 +145,11 @@ public sealed abstract class TermComparator extends MockTycker permits Unifier {
     return result;
   }
 
+  /**
+   * Checking whether {@param lhs} and {@param rhs} are judgemental equal
+   *
+   * @return the type of {@param lhs} and {@param rhs} if they are judgemental equal, null if otherwise.
+   */
   @Nullable protected Term compareUntyped(@NotNull Term lhs, @NotNull Term rhs, Sub lr, Sub rl) {
     traceEntrance(new Trace.UnifyT(lhs.freezeHoles(state),
       rhs.freezeHoles(state), pos));

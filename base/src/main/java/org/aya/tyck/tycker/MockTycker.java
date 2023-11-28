@@ -86,6 +86,9 @@ public abstract sealed class MockTycker extends StatedTycker permits ConcreteAwa
     return new Result.Default(term, type);
   }
 
+  /**
+   * Perform {@param action} in a local scope.
+   */
   public <R> R subscoped(@NotNull Supplier<R> action) {
     var parentCtx = this.ctx;
     this.ctx = parentCtx.deriveMap();

@@ -154,6 +154,7 @@ public sealed interface LocalCtx permits MapLocalCtx, SeqLocalCtx {
   }
 
   @Contract(pure = true) @Nullable Term getLocal(@NotNull LocalVar var);
+
   default void put(@NotNull Term.Param param) {
     put(param.ref(), param.type());
   }
