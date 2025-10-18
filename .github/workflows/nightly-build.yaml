@@ -3,18 +3,18 @@ on:
   push:
     branches: [main, ci]
 jobs:
-  move-tag:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Move ci tag
-        run: |
-          mkdir repo
-          git clone -b "$BRANCH_NAME" "https://github.com/${GITHUB_REPOSITORY}" repo
-          cd repo
-          bash .github/workflows/move-tag.sh "nightly-build" "Last commit build by the CI"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  #  move-tag:
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Move ci tag
+  #        run: |
+  #          mkdir repo
+  #          git clone -b "$BRANCH_NAME" "https://github.com/${GITHUB_REPOSITORY}" repo
+  #          cd repo
+  #          bash .github/workflows/move-tag.sh "nightly-build" "Last commit build by the CI"
+  #        env:
+  #          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  #          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
   check-aya-version:
     uses: aya-prover/aya-dev/.github/workflows/extract-version.yaml@main
@@ -39,7 +39,7 @@ jobs:
           arguments: publishAggregationToCentralPortalSnapshots --info --no-daemon --stacktrace --warning-mode all
 
   nightly-build:
-    needs: [move-tag, check-aya-version]
+    needs: [check-aya-version]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
