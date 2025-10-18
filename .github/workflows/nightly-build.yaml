@@ -17,7 +17,7 @@ jobs:
   #          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
   check-aya-version:
-    uses: aya-prover/aya-dev/.github/workflows/extract-version.yaml@main
+    uses: HoshinoTented/aya-dev/.github/workflows/extract-version.yaml@main
 
   publish-snapshot:
     needs: [check-aya-version]
