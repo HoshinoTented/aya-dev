@@ -3,18 +3,18 @@ on:
   push:
     branches: [main, ci]
 jobs:
-  move-tag:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Move ci tag
-        run: |
-          mkdir repo
-          git clone -b "$BRANCH_NAME" "https://github.com/${GITHUB_REPOSITORY}" repo
-          cd repo
-          bash .github/workflows/move-tag.sh "nightly-build" "Last commit build by the CI"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  #  move-tag:
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Move ci tag
+  #        run: |
+  #          mkdir repo
+  #          git clone -b "$BRANCH_NAME" "https://github.com/${GITHUB_REPOSITORY}" repo
+  #          cd repo
+  #          bash .github/workflows/move-tag.sh "nightly-build" "Last commit build by the CI"
+  #        env:
+  #          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  #          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
   check-aya-version:
     uses: aya-prover/aya-dev/.github/workflows/extract-version.yaml@main
@@ -39,7 +39,7 @@ jobs:
           arguments: publishAggregationToCentralPortalSnapshots --info --no-daemon --stacktrace --warning-mode all
 
   nightly-build:
-    needs: [move-tag, check-aya-version]
+    needs: [check-aya-version]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -93,20 +93,20 @@ jobs:
         id: date
         run: echo "MY_DATE=$(date +%Y/%m/%d-%H:%M)" >> $GITHUB_ENV
 
-      - name: Update Release (jlink zips and jars)
-        uses: Xotl/cool-github-releases@v1
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          mode: update
-          isPrerelease: false
-          tag_name: nightly-build
-          release_name: "${{ env.MY_DATE }} nightly build"
-          body_mrkdwn: |
-            _These are latest builds, but the date on GitHub is frozen due to stupid limitations.
-            Corresponding commit: <https://github.com/aya-prover/aya-dev/commit/${{ github.sha }}>_
-          assets: lsp-fatjar.jar;cli-fatjar.jar;${{ steps.collect_jlinkAyaZip.outputs.jlinkFiles }}
-          replace_assets: true
-          github_token: ${{ secrets.GH_TOKEN }}
+      #      - name: Update Release (jlink zips and jars)
+      #        uses: Xotl/cool-github-releases@v1
+      #        if: matrix.os == 'ubuntu-latest'
+      #        with:
+      #          mode: update
+      #          isPrerelease: false
+      #          tag_name: nightly-build
+      #          release_name: "${{ env.MY_DATE }} nightly build"
+      #          body_mrkdwn: |
+      #            _These are latest builds, but the date on GitHub is frozen due to stupid limitations.
+      #            Corresponding commit: <https://github.com/aya-prover/aya-dev/commit/${{ github.sha }}>_
+      #          assets: lsp-fatjar.jar;cli-fatjar.jar;${{ steps.collect_jlinkAyaZip.outputs.jlinkFiles }}
+      #          replace_assets: true
+      #          github_token: ${{ secrets.GH_TOKEN }}
       - name: Install Built Aya
         if: matrix.os == 'ubuntu-latest'
         run: |
